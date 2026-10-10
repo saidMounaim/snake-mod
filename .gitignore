@@ -1,0 +1,4 @@
+.DS_Store
+# Types and tsconfig the engine lays beside a mod it loads
+plugins/*/.claude-plugin/types/
+plugins/*/tsconfig.json

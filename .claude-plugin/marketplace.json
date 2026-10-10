@@ -1,0 +1,12 @@
+{
+  "name": "snake-mod",
+  "description": "A Claude Code mod marketplace with a playable snake game",
+  "owner": { "name": "Said Mounaim" },
+  "plugins": [
+    {
+      "name": "snake",
+      "source": "./plugins/snake",
+      "description": "Adds /snake: a playable snake game in a pane, fully local"
+    }
+  ]
+}
