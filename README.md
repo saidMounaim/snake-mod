@@ -21,14 +21,18 @@ Answer `y` to add the marketplace, then choose a scope.
 
 ## Play
 
-Run `/snake`, click the board, and steer with the arrow keys (WASD works too). Each piece of food scores a point and speeds the snake up. Hitting a wall or your own body ends the game.
+Run `/snake` in Claude Code **in a terminal** (VS Code's Claude panel can't send keys to a mod). Steer with **W A S D**. Each piece of food scores a point and speeds the snake up. Hitting a wall or your own body ends the game.
 
 | Key | Action |
 | --- | --- |
-| Arrows / WASD | Steer (the first press starts the game) |
-| Space / p | Pause or resume |
-| r / Enter | Play again after game over |
+| W A S D | Steer (the first press starts the game) |
+| p | Pause or resume |
+| r | Play again |
 | q | Close the pane |
+
+The arrow keys work too once you click the board, but only in Claude Code's fullscreen layout, which is the only place it passes clicks to mods.
+
+If the keys type into the prompt instead, the pane doesn't have the keyboard: press `ctrl+x` then `tab` to move to it.
 
 ## Layout
 
@@ -39,5 +43,6 @@ plugins/snake/
   hooks/hooks.json                points at the hooks module
   hooks/register.tsx              registers /snake and draws the pane
   hooks/game.ts                   the game: state, timer and keys
+  types/index.d.ts                the mod's state contract
   tests/snake.test.ts             run with: claude plugin test plugins/snake
 ```

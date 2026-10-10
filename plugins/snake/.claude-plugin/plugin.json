@@ -1,6 +1,7 @@
 {
   "name": "snake",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Adds /snake: a playable snake game in a pane, fully local with no model calls",
-  "author": { "name": "Said Mounaim" }
+  "author": { "name": "Said Mounaim" },
+  "types": "./types/index.d.ts"
 }

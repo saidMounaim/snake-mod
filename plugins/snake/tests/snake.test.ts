@@ -96,3 +96,25 @@ test('the board plays with arrow keys and ends on collision, on every surface', 
     await ui.unmount()
   }
 })
+
+test('the pane buttons steer the board without a click, on every surface', async $ => {
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount({ plugin: 'snake', surface, ...PANE })
+    await ui.press({ key: 'down' })
+    expect(await ui.find({ in: 'board', text: /W A S D to steer/ })).toBeDefined()
+    await ui.advance(150 * 20)
+    expect(await ui.find({ in: 'board', key: 'status', text: /GAME OVER/ })).toBeDefined()
+    await ui.press({ key: 'restart' })
+    expect(await ui.find({ in: 'board', key: 'status', text: /GAME OVER/ })).toBeUndefined()
+    await ui.press({ key: 'pause' })
+    expect(await ui.find({ in: 'board', text: /Paused/ })).toBeDefined()
+    await ui.unmount()
+  }
+})
+
+test('pause and restart keys follow the rules', async () => {
+  const playing = onKey(newGame(), { key: 'down' })
+  expect(onKey(playing, { key: 'pause' }).status).toBe('paused')
+  expect(onKey(onKey(playing, { key: 'pause' }), { key: 'pause' }).status).toBe('playing')
+  expect(onKey({ ...playing, status: 'over', score: 3, best: 3 }, { key: 'restart' })).toMatchObject({ status: 'playing', score: 0, best: 3 })
+})

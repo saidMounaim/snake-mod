@@ -1,5 +1,7 @@
 import type { ClientKeyEvent, ClientModule, RenderElement } from 'claude-code'
 
+import type { SnakeCommand } from '../types'
+
 // The game runs here, on the drawing thread: a surface module with its own
 // state, clock and keys. Nothing in it calls the model or reaches `$`.
 
@@ -18,6 +20,8 @@ export type Game = {
   score: number
   best: number
   status: Status
+  // The last pane button press applied, by its count.
+  applied: number
 }
 
 const STEP: Record<Dir, Cell> = {
@@ -48,7 +52,7 @@ export function newGame(best = 0): Game {
     { x: 5, y },
     { x: 4, y },
   ]
-  return { snake, dir: 'right', turns: [], food: placeFood(snake), score: 0, best, status: 'ready' }
+  return { snake, dir: 'right', turns: [], food: placeFood(snake), score: 0, best, status: 'ready', applied: 0 }
 }
 
 export function advance(g: Game): Game {
@@ -70,7 +74,11 @@ export function advance(g: Game): Game {
 
 export function onKey(g: Game, e: ClientKeyEvent): Game {
   const key = e.key.toLowerCase()
-  if (g.status === 'over') return key === 'r' || key === 'return' || key === ' ' ? { ...newGame(g.best), status: 'playing' } : g
+  if (key === 'restart' || (g.status === 'over' && (key === 'r' || key === 'return' || key === ' ')))
+    return { ...newGame(g.best), status: 'playing', applied: g.applied }
+  if (g.status === 'over') return g
+  if (key === 'pause' && g.status === 'ready') return g
+  if (key === 'pause') return { ...g, status: g.status === 'paused' ? 'playing' : 'paused' }
   if (key === 'p' || key === ' ') {
     if (g.status === 'playing') return { ...g, status: 'paused' }
     if (g.status === 'paused') return { ...g, status: 'playing' }
@@ -85,11 +93,14 @@ export function onKey(g: Game, e: ClientKeyEvent): Game {
   return { ...g, turns, status: 'playing' }
 }
 
-const Snake: ClientModule<null, Game> = (_props, surface) => {
+type Props = { command?: SnakeCommand } | null
+
+const Snake: ClientModule<Props, Game> = (props, surface) => {
   const { Box, Text } = surface.elements
   let g = surface.state
   if (g === undefined) {
-    g = newGame()
+    // A reopened pane hands over the last press again; it is not a new one.
+    g = { ...newGame(), applied: props?.command?.n ?? 0 }
     surface.setState(g)
     // One timer at the current speed, restarted whenever the score speeds it up.
     let period = stepMs(0)
@@ -108,8 +119,17 @@ const Snake: ClientModule<null, Game> = (_props, surface) => {
     let stop = surface.every(period, tick)
     surface.onKey(e => {
       const cur = surface.state
-      if (cur) surface.setState(onKey(cur, e))
+      if (!cur) return
+      if (e.key.toLowerCase() === 'q') surface.post({ close: true })
+      else surface.setState(onKey(cur, e))
     })
+  }
+
+  // A press on one of the pane's buttons arrives as new props.
+  const cmd = props?.command
+  if (cmd && cmd.n > g.applied) {
+    g = { ...onKey(g, { key: cmd.key }), applied: cmd.n }
+    surface.setState(g)
   }
 
   const rows: RenderElement[] = []
@@ -136,12 +156,12 @@ const Snake: ClientModule<null, Game> = (_props, surface) => {
 
   const hint =
     g.status === 'ready'
-      ? 'Click the board, then press an arrow key to start'
+      ? 'Press W A S D to start (or click the board for arrows)'
       : g.status === 'paused'
-        ? 'Paused · space or p to resume'
+        ? 'Paused · p to resume'
         : g.status === 'over'
-          ? 'Game over · r or Enter to play again'
-          : 'Arrows or WASD to steer · space to pause'
+          ? 'Game over · r to play again'
+          : 'W A S D to steer · p to pause'
 
   return Box({
     flexDirection: 'column',
