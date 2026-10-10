@@ -19,6 +19,24 @@ Or, from GitHub, one line at the Claude Code prompt:
 
 Answer `y` to add the marketplace, then choose a scope.
 
+## Remove
+
+Uninstall the plugin:
+
+```
+claude plugin uninstall snake@snake-mod
+```
+
+If you installed it at the project or local scope, add `--scope project` or `--scope local`.
+
+To also remove the marketplace (this uninstalls its plugins too):
+
+```
+claude plugin marketplace remove snake-mod
+```
+
+To turn it off for a while without uninstalling, use `claude plugin disable snake@snake-mod`, and `claude plugin enable snake@snake-mod` to turn it back on.
+
 ## Play
 
 Run `/snake` in Claude Code **in a terminal** (VS Code's Claude panel can't send keys to a mod). Steer with **W A S D**. Each piece of food scores a point and speeds the snake up. Hitting a wall or your own body ends the game.
